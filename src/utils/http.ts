@@ -1,7 +1,7 @@
 import { useMemberStore } from '@/stores'
 
 const baseURL = 'https://pcapi-xiaotuxian-front-devtest.itheima.net'
-
+// axios是基于浏览器的XHR来实现的，而小程序不是浏览器环境，所以用不了axios
 const httpInterceptor = {
   invoke(options: UniApp.RequestOptions) {
     // 拼接基础url地址

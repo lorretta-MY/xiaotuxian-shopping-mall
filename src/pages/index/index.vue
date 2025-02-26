@@ -1,6 +1,10 @@
 <template>
+  <!-- 导航 -->
   <CustomerNavbar />
-  <view>hello</view>
+  <!-- 轮播图 -->
+  <myCommonSwiper :pageType="1" />
+
+  123qwssd
 </template>
 
 <script setup>
