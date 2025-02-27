@@ -1,12 +1,12 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { getHomeBannerAPI } from '@/services/home'
 import { onLoad } from '@dcloudio/uni-app'
 
 const props = defineProps({
   pageType: {
     type: Number,
-    default: 1, // 1首页 2分类页
+    default: 1,
   },
 })
 
@@ -17,13 +17,21 @@ const onSwiperChange = (e) => {
 
 // 获取数据
 const bannerList = ref([])
-const fetchBannerData = async () => {
-  const res = await getHomeBannerAPI(props.pageType)
+const fetchBannerData = async (types) => {
+  const res = await getHomeBannerAPI(types || props.pageType)
   bannerList.value = res.result
-  console.log('fetchBannerData', bannerList.value)
+}
+const resetBanner = () => {
+  activeIndex.value = 0
+  bannerList.value = []
 }
 
-onLoad(() => {
+defineExpose({
+  resetBanner,
+  fetchBannerData,
+})
+
+onMounted(() => {
   fetchBannerData()
 })
 </script>

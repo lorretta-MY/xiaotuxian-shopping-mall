@@ -41,7 +41,6 @@ const fetchgetGoodsGuessLikeData = async () => {
     listLoading.value = true
     const res = await getGoodsGuessLikeAPI(pageParams.value)
     GoodsGuessLikeList.value.push(...res.result.items)
-    console.log('GoodsGuessLikeList', GoodsGuessLikeList)
 
     if (pageParams.value.page > res.result.pages) {
       isFinish.value = true
@@ -55,8 +54,15 @@ const fetchgetGoodsGuessLikeData = async () => {
   }
 }
 
+const resetStatus = () => {
+  pageParams.value.page = 1
+  GoodsGuessLikeList.value = []
+  isFinish.value = false
+}
+
 defineExpose({
   getMoreData: fetchgetGoodsGuessLikeData,
+  resetStatus,
 })
 
 onMounted(() => {
