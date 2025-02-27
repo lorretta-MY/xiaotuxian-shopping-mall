@@ -26,3 +26,12 @@ export const getHomeHotMutliAPI = () => {
     url: '/home/hot/mutli',
   })
 }
+
+// 首页猜你喜欢
+export const getGoodsGuessLikeAPI = (data) => {
+  return http({
+    method: 'GET',
+    url: '/home/goods/guessLike',
+    data,
+  })
+}

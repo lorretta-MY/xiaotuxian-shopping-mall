@@ -1,7 +1,3 @@
-<script setup lang="ts">
-//
-</script>
-
 <template>
   <!-- 猜你喜欢 -->
   <view class="caption">
@@ -10,24 +6,63 @@
   <view class="guess">
     <navigator
       class="guess-item"
-      v-for="item in 10"
-      :key="item"
-      :url="`/pages/goods/goods?id=4007498`"
+      v-for="item in GoodsGuessLikeList"
+      :key="item.id"
+      :url="`/pages/goods/goods?id=${item.id}`"
     >
-      <image
-        class="image"
-        mode="aspectFill"
-        src="https://pcapi-xiaotuxian-front-devtest.itheima.net/miniapp/uploads/goods_big_1.jpg"
-      ></image>
-      <view class="name"> 德国THORE男表 超薄手表男士休闲简约夜光石英防水直径40毫米 </view>
+      <image class="image" mode="aspectFill" :src="item.picture"></image>
+      <view class="name"> {{ item.name }} </view>
       <view class="price">
         <text class="small">¥</text>
-        <text>899.00</text>
+        <text>{{ item.price }}</text>
       </view>
     </navigator>
   </view>
-  <view class="loading-text"> 正在加载... </view>
+  <view class="loading-text"> {{ isFinish ? '糟糕，没有更多数据啦~' : '正在加载中...' }} </view>
 </template>
+
+<script setup lang="ts">
+//
+import { getGoodsGuessLikeAPI } from '@/services/home'
+import { ref, onMounted } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
+
+const GoodsGuessLikeList = ref([])
+const pageParams = ref({
+  page: 30,
+  pageSize: 10,
+})
+const listLoading = ref(false)
+const isFinish = ref(false)
+const fetchgetGoodsGuessLikeData = async () => {
+  try {
+    // 判断是否继续请求
+    if (isFinish.value) return
+    listLoading.value = true
+    const res = await getGoodsGuessLikeAPI(pageParams.value)
+    GoodsGuessLikeList.value.push(...res.result.items)
+    console.log('GoodsGuessLikeList', GoodsGuessLikeList)
+
+    if (pageParams.value.page > res.result.pages) {
+      isFinish.value = true
+      return
+    }
+    pageParams.value.page++
+  } catch (error) {
+    console.log(error)
+  } finally {
+    listLoading.value = false
+  }
+}
+
+defineExpose({
+  getMoreData: fetchgetGoodsGuessLikeData,
+})
+
+onMounted(() => {
+  fetchgetGoodsGuessLikeData()
+})
+</script>
 
 <style lang="scss">
 :host {

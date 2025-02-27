@@ -1,7 +1,8 @@
 <template>
   <!-- 导航 -->
   <CustomerNavbar />
-  <scroll-view scroll-y style="flex: 1">
+  <!-- 可滑动区域 -->
+  <scroll-view scroll-y style="flex: 1" @scrolltolower="handleScrollToLower">
     <!-- 轮播图 -->
     <myCommonSwiper :pageType="1" />
     <!-- 分类 -->
@@ -9,7 +10,7 @@
     <!-- 热门推荐 -->
     <CustomerHotPanel :list="HotInfoList" />
     <!-- 猜你喜欢 -->
-    <myCommonGuess />
+    <myCommonGuess ref="myCommonGuessRef" />
   </scroll-view>
 </template>
 
@@ -22,6 +23,12 @@ import { getHomeCategoryMutliAPI, getHomeHotMutliAPI } from '@/services/home'
 import CustomerNavbar from './components/CustomerNavbar.vue'
 import CustomerCategory from './components/CustomerCategory.vue'
 import CustomerHotPanel from './components/CustomerHotPanel.vue'
+
+// 触底重新请求 猜你喜欢 列表数据
+const myCommonGuessRef = ref(null)
+const handleScrollToLower = () => {
+  myCommonGuessRef.value?.getMoreData()
+}
 
 // 获取分类数据
 const categoryList = ref([])
