@@ -65,6 +65,7 @@ onLoad(async () => {
 
 const myCommonSwiperRef = ref(null)
 
+// 上拉刷新
 const isTriggered = ref(false)
 const handleRefresh = async () => {
   isTriggered.value = true

@@ -35,3 +35,12 @@ export const getGoodsGuessLikeAPI = (data) => {
     data,
   })
 }
+
+// 热门分类
+export const getHotLikeAPI = (url, data) => {
+  return http({
+    method: 'GET',
+    url,
+    data,
+  })
+}
