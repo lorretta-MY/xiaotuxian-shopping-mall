@@ -15,14 +15,18 @@ const hotMap = [
 const props = defineProps({
   type: String,
 })
-// 设置navbar标题
+// 动态设置当前页面的标题。
 const currentHotMap = hotMap.find((v) => v.type === props.type)
 uni.setNavigationBarTitle({ title: currentHotMap?.title })
 
 const currentHotData = ref({})
+const currentIndex = ref(0)
 const getHotLikeData = async () => {
   try {
-    const res = await getHotLikeAPI(currentHotMap?.url)
+    const res = await getHotLikeAPI(currentHotMap?.url, {
+      page: process.env.NODE_ENV === 'development' ? 32 : 1,
+      pageSize: 10,
+    })
     currentHotData.value = res.result
   } catch (error) {
     throw new Error(error)
@@ -31,6 +35,29 @@ const getHotLikeData = async () => {
 onLoad(() => {
   getHotLikeData()
 })
+
+const onScrolltolower = async () => {
+  try {
+    // 获取当前tab分类
+    const currentSubtype = currentHotData.value?.subTypes[currentIndex.value]
+    if (currentSubtype.goodsItems.page < currentSubtype.goodsItems.pages) {
+      currentSubtype.goodsItems.page++
+    } else {
+      currentSubtype.isFinish = true
+      return
+    }
+    const res = await getHotLikeAPI(currentHotMap?.url, {
+      id: currentSubtype.id,
+      page: currentSubtype.goodsItems.page,
+      pageSize: currentSubtype.goodsItems.pageSize,
+    })
+    // 新旧数据拼接
+    const newSubtype = res.result.subTypes[currentIndex.value]
+    currentSubtype.goodsItems.items.push(...newSubtype.goodsItems.items)
+  } catch (error) {
+    console.log(error)
+  }
+}
 </script>
 
 <template>
@@ -41,30 +68,43 @@ onLoad(() => {
     </view>
     <!-- 推荐选项 -->
     <view class="tabs">
-      <text class="text" v-for="tab in currentHotData.subTypes" :key="tab.id">{{ tab.title }}</text>
+      <text
+        class="text"
+        v-for="(tab, tabIndex) in currentHotData.subTypes"
+        :key="tab.id"
+        :class="{ active: tabIndex === currentIndex }"
+        @tap="currentIndex = tabIndex"
+        >{{ tab.title }}</text
+      >
     </view>
     <!-- 推荐列表 -->
-    <scroll-view scroll-y class="scroll-view">
+    <scroll-view
+      scroll-y
+      v-show="index === currentIndex"
+      class="scroll-view"
+      v-for="(item, index) in currentHotData.subTypes"
+      :key="item.id"
+      @scrolltolower="onScrolltolower"
+    >
       <view class="goods">
         <navigator
           hover-class="none"
           class="navigator"
-          v-for="goods in 10"
-          :key="goods"
-          :url="`/pages/goods/goods?id=`"
+          v-for="goods in item.goodsItems.items"
+          :key="goods.id"
+          :url="`/pages/goods/goods?id=${goods.id}`"
         >
-          <image
-            class="thumb"
-            src="https://yanxuan-item.nosdn.127.net/5e7864647286c7447eeee7f0025f8c11.png"
-          ></image>
-          <view class="name ellipsis">不含酒精，使用安心爽肤清洁湿巾</view>
+          <image class="thumb" :src="goods.picture"></image>
+          <view class="name ellipsis">{{ goods.name }}</view>
           <view class="price">
             <text class="symbol">¥</text>
-            <text class="number">29.90</text>
+            <text class="number">{{ goods.price }}</text>
           </view>
         </navigator>
       </view>
-      <view class="loading-text">正在加载...</view>
+      <view class="loading-text">{{
+        item.isFinish ? '糟糕，没有更多数据啦~' : '正在加载中...'
+      }}</view>
     </scroll-view>
   </view>
 </template>
