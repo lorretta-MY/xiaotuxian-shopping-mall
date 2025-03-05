@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { getCategoryTopApi } from '@/services/category'
 import { onLoad } from '@dcloudio/uni-app'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import categorySkeleton from './categorySkeleton'
 
 const CategoryTopList = ref([])
 const activeIndex = ref(0)
-const showLoading = ref(true)
+const showLoading = ref(false)
 const getCategoryTopData = async () => {
   try {
     showLoading.value = true
@@ -14,9 +15,11 @@ const getCategoryTopData = async () => {
   } catch (error) {
     console.log(error)
   } finally {
-    // showLoading.value = false
+    showLoading.value = false
   }
 }
+
+const currentSubCategory = computed(() => CategoryTopList.value[activeIndex.value]?.children || [])
 
 onLoad(() => {
   getCategoryTopData()
@@ -24,7 +27,7 @@ onLoad(() => {
 </script>
 
 <template>
-  <view class="viewport">
+  <view class="viewport" v-if="!showLoading">
     <!-- 搜索框 -->
     <view class="search">
       <view class="input">
@@ -46,38 +49,38 @@ onLoad(() => {
             <text class="name"> {{ item.name }} </text>
           </view>
         </view>
-        <view v-else class="my-loading-icons">
-          <uni-icons type="spinner-cycle" size="30" color="#999"></uni-icons>
-        </view>
+        <image
+          v-else
+          class="my-loading-icons"
+          style="width: 20px; height: 20px"
+          src="https://ts1.cn.mm.bing.net/th/id/R-C.23dacc3c95d73df0b3c902f53854c1d9?rik=ms%2fr%2fL%2bb%2bKAMbQ&riu=http%3a%2f%2fpic.616pic.com%2fys_img%2f00%2f54%2f47%2fum3xUfY3JS.jpg&ehk=IZhkPZwGh3lUpUjbM09jsbUn%2bkynW%2ffj72pvejPy420%3d&risl=&pid=ImgRaw&r=0&sres=1&sresct=1"
+        ></image>
       </scroll-view>
       <!-- 右侧：二级分类 -->
       <scroll-view class="secondary" scroll-y>
         <!-- 轮播图 -->
         <myCommonSwiper :pageType="2" ref="myCommonSwiperRef" />
         <!-- 内容区域 -->
-        <view class="panel" v-for="item in 3" :key="item">
+        <view class="panel" v-for="item in currentSubCategory" :key="item.id">
           <view class="title">
-            <text class="name">宠物用品</text>
+            <text class="name">{{ item.name }}</text>
             <navigator class="more" hover-class="none" url="pages/category/category"
               >全部</navigator
             >
           </view>
           <view class="section">
             <navigator
-              v-for="goods in 4"
-              :key="goods"
+              v-for="goods in item.goods"
+              :key="goods.id"
               class="goods"
               hover-class="none"
               :url="`/pages/goods/goods?id=`"
             >
-              <image
-                class="image"
-                src="https://yanxuan-item.nosdn.127.net/674ec7a88de58a026304983dd049ea69.jpg"
-              ></image>
-              <view class="name ellipsis">木天蓼逗猫棍</view>
+              <image class="image" :src="goods.picture"></image>
+              <view class="name ellipsis">{{ goods.name }}</view>
               <view class="price">
                 <text class="symbol">¥</text>
-                <text class="number">16.00</text>
+                <text class="number">{{ goods.price }}</text>
               </view>
             </navigator>
           </view>
@@ -85,6 +88,7 @@ onLoad(() => {
       </scroll-view>
     </view>
   </view>
+  <categorySkeleton v-else />
 </template>
 
 <style lang="scss">
@@ -97,14 +101,16 @@ onLoad(() => {
   }
 }
 .my-loading-icons {
-  // width: 10rpx;
-  // height: 10rpx;
   animation: rotateAnimation 2s linear infinite; /* 应用动画 */
-
-  .uni-icons {
-    width: 30rpx;
-    height: 30rpx;
-  }
+  text-align: center;
+  vertical-align: middle;
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  margin: 200rpx auto auto;
+  bottom: 0;
+  opacity: 0.6;
 }
 page {
   height: 100%;
@@ -147,6 +153,7 @@ page {
   width: 180rpx;
   flex: none;
   background-color: #f6f6f6;
+  position: relative;
   .item {
     display: flex;
     justify-content: center;
