@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { getCategoryTopApi } from '@/services/category'
 import { onLoad } from '@dcloudio/uni-app'
 import { ref, computed } from 'vue'
@@ -74,7 +74,7 @@ onLoad(() => {
               :key="goods.id"
               class="goods"
               hover-class="none"
-              :url="`/pages/goods/goods?id=`"
+              :url="`/pages/goods/goods?id=${goods.id}`"
             >
               <image class="image" :src="goods.picture"></image>
               <view class="name ellipsis">{{ goods.name }}</view>
