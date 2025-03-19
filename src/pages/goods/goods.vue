@@ -2,8 +2,17 @@
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
 import { getGoodsByIdApi } from '@/services/goods'
-import { onLaunch, onLoad } from '@dcloudio/uni-app'
+import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
+import ServicePanel from './components/ServicePanel.vue'
+import AddressPanel from './components/AddressPanel.vue'
+
+const popUpRef = ref(null)
+const popupName = ref('')
+const openPopup = (name) => {
+  popupName.value = name
+  popUpRef.value.open()
+}
 
 const props = defineProps({
   id: {
@@ -11,15 +20,31 @@ const props = defineProps({
     default: '',
   },
 })
-console.log(props, 'props')
 
-const GoodsByIdDataInfo = ref({})
+const GoodsInfo = ref({})
 const getGoodsByIdData = async () => {
-  const res = await getGoodsByIdApi(props.id)
-  GoodsByIdDataInfo.value = res.result
+  try {
+    const res = await getGoodsByIdApi(props.id)
+    GoodsInfo.value = res.result
+  } catch (error) {
+    throw new Error(error)
+  }
 }
 
 const activeImg = ref(0)
+// 切换轮播图
+const onImgChange = (e) => {
+  console.log(e.detail?.current)
+  activeImg.value = e.detail?.current
+}
+// 点击轮播图
+const onPreviewImg = (img) => {
+  uni.previewImage({
+    current: img,
+    urls: GoodsInfo.value?.mainPictures,
+    loop: true,
+  })
+}
 
 onLoad(() => {
   getGoodsByIdData()
@@ -32,30 +57,27 @@ onLoad(() => {
     <view class="goods">
       <!-- 商品主图 -->
       <view class="preview">
-        <swiper circular indicator-dots>
-          <swiper-item
-            v-for="(img, index) in GoodsByIdDataInfo.mainPictures"
-            :key="img"
-            @touch="activeImg = index"
-          >
-            <image mode="aspectFill" :src="img" />
+        <!-- <swiper circular indicator-dots> -->
+        <swiper circular @change="onImgChange">
+          <swiper-item v-for="img in GoodsInfo?.mainPictures" :key="img">
+            <image @tap="onPreviewImg(img)" mode="aspectFill" :src="img" />
           </swiper-item>
         </swiper>
-        <!-- <view class="indicator">
+        <view class="indicator">
           <text class="current">{{ activeImg + 1 }}</text>
           <text class="split">/</text>
-          <text class="total">{{ GoodsByIdDataInfo.mainPictures.length }}</text>
-        </view> -->
+          <text class="total">{{ GoodsInfo.mainPictures?.length }}</text>
+        </view>
       </view>
 
       <!-- 商品简介 -->
       <view class="meta">
         <view class="price">
           <text class="symbol">¥</text>
-          <text class="number">{{ GoodsByIdDataInfo.price }}</text>
+          <text class="number">{{ GoodsInfo?.price }}</text>
         </view>
-        <view class="name ellipsis">{{ GoodsByIdDataInfo.name }} </view>
-        <view class="desc"> {{ GoodsByIdDataInfo.desc }} </view>
+        <view class="name ellipsis">{{ GoodsInfo?.name }} </view>
+        <view class="desc"> {{ GoodsInfo?.desc }} </view>
       </view>
 
       <!-- 操作面板 -->
@@ -64,11 +86,11 @@ onLoad(() => {
           <text class="label">选择</text>
           <text class="text ellipsis"> 请选择商品规格 </text>
         </view>
-        <view class="item arrow">
+        <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
           <text class="text ellipsis"> 请选择收获地址 </text>
         </view>
-        <view class="item arrow">
+        <view class="item arrow" @tap="openPopup('service')">
           <text class="label">服务</text>
           <text class="text ellipsis"> 无忧退 快速退款 免费包邮 </text>
         </view>
@@ -83,18 +105,14 @@ onLoad(() => {
       <view class="content">
         <view class="properties">
           <!-- 属性详情 -->
-          <view
-            class="item"
-            v-for="(item, index) in GoodsByIdDataInfo.details.properties"
-            :key="index"
-          >
+          <view class="item" v-for="(item, index) in GoodsInfo?.details.properties" :key="index">
             <text class="label">{{ item.name }}</text>
             <text class="value">{{ item.value }}</text>
           </view>
         </view>
         <!-- 图片详情 -->
         <image
-          v-for="(src, index) in GoodsByIdDataInfo.details.pictures"
+          v-for="(src, index) in GoodsInfo?.details.pictures"
           :key="index"
           mode="widthFix"
           :src="src"
@@ -109,7 +127,7 @@ onLoad(() => {
       </view>
       <view class="content">
         <navigator
-          v-for="item in GoodsByIdDataInfo.similarProducts"
+          v-for="item in GoodsInfo?.similarProducts"
           :key="item.id"
           class="goods"
           hover-class="none"
@@ -143,6 +161,12 @@ onLoad(() => {
       <view class="buynow"> 立即购买 </view>
     </view>
   </view>
+
+  <!-- popup -->
+  <uni-popup ref="popUpRef" type="bottom" background-color="#fff">
+    <AddressPanel v-if="popupName === 'address'" @close="popUpRef.close()" />
+    <ServicePanel v-if="popupName === 'service'" @close="popUpRef.close()" />
+  </uni-popup>
 </template>
 
 <style lang="scss">
