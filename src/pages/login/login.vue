@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onLoad } from '@dcloudio/uni-app'
 import { postLoginApi, postLoginSimpleApi } from '@/services/login'
+import { useMemberStore } from '@/stores'
 //
 let code = ''
 // onLoad(async () => {
@@ -31,11 +32,16 @@ const handleLoginSimple = async () => {
         icon: 'none',
       })
     }
+    // 并缓存数据
+    const memberStore = useMemberStore()
+    memberStore.setProfile(res.result)
+    // 跳转到个人中心页面
+    uni.switchTab({ url: '/pages/my/my' })
+    // 成功提示
     uni.showToast({
       title: '登录成功!',
-      icon: 'none',
+      icon: 'success',
     })
-    console.log('handleLoginSimple', res)
   } catch (error) {
     console.log(error)
   }
