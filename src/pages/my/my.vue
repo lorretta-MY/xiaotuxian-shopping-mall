@@ -1,6 +1,5 @@
-// src/pages/my/my.vue
-
 <script setup lang="ts">
+import { useGuessList } from '@/hooks'
 import { useMemberStore } from '@/stores'
 
 // 获取屏幕边界到安全区域距离
@@ -15,10 +14,13 @@ const orderTypes = [
 
 // 获取store里的用户数据
 const memberStore = useMemberStore()
+
+// 猜你喜欢 hook
+const { myCommonGuessRef, handleScrollToLower } = useGuessList()
 </script>
 
 <template>
-  <scroll-view class="viewport" scroll-y enable-back-to-top>
+  <scroll-view class="viewport" scroll-y enable-back-to-top @scrolltolower="handleScrollToLower">
     <!-- 个人资料 -->
     <view class="profile" :style="{ paddingTop: safeAreaInsets!.top + 'px' }">
       <!-- 情况1：已登录 -->
@@ -83,7 +85,7 @@ const memberStore = useMemberStore()
     </view>
     <!-- 猜你喜欢 -->
     <view class="guess">
-      <XtxGuess ref="guessRef" />
+      <myCommonGuess ref="myCommonGuessRef" />
     </view>
   </scroll-view>
 </template>

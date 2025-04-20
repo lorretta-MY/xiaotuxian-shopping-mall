@@ -36,11 +36,10 @@ import CustomerCategory from './components/CustomerCategory.vue'
 import CustomerHotPanel from './components/CustomerHotPanel.vue'
 import pageSkeleton from './components/pageSkeleton.vue'
 
-// 触底重新请求 猜你喜欢 列表数据
-const myCommonGuessRef = ref(null)
-const handleScrollToLower = () => {
-  myCommonGuessRef.value?.getMoreData()
-}
+import { useGuessList } from '@/hooks/index.js'
+
+// 猜你喜欢 hook
+const { myCommonGuessRef, handleScrollToLower } = useGuessList()
 
 // 获取分类数据
 const categoryList = ref([])
